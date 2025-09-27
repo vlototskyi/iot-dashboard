@@ -36,12 +36,11 @@ export default function DeviceDetail() {
 
   const [data, setData] = useState<Telemetry[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [windowMinutes, setWindowMinutes] = useState(60); // default 1h
+  const [windowMinutes, setWindowMinutes] = useState(60);
   const timerRef = useRef<number | null>(null);
 
   const navigate = useNavigate();
 
-  // loader used by initial fetch + polling
   const load = async () => {
     try {
       setErr(null);
@@ -54,29 +53,25 @@ export default function DeviceDetail() {
   };
 
   useEffect(() => {
-    // initial fetch
     void load();
 
-    // clear any previous interval
     if (timerRef.current) {
       window.clearInterval(timerRef.current);
       timerRef.current = null;
     }
 
-    // polling (pause if tab hidden)
     const tick = () => {
       if (document.visibilityState === "visible") void load();
     };
     timerRef.current = window.setInterval(tick, POLL_MS);
 
-    // cleanup on param change/unmount
     return () => {
       if (timerRef.current) {
         window.clearInterval(timerRef.current);
         timerRef.current = null;
       }
     };
-  }, [deviceId]); // re-create polling when URL param changes
+  }, [deviceId]);
 
   const handleWindowChange = (
     _: React.MouseEvent<HTMLElement>,
@@ -85,7 +80,6 @@ export default function DeviceDetail() {
     if (newValue !== null) setWindowMinutes(newValue);
   };
 
-  // all data already sorted asc by ts in the client
   const dhtAll = useMemo(
     () => (data ?? []).filter((d) => d.kind === "dht"),
     [data]
@@ -95,7 +89,6 @@ export default function DeviceDetail() {
     [data]
   );
 
-  // windowed views
   const dhtData = useMemo(
     () => lastWindow(dhtAll, windowMinutes),
     [dhtAll, windowMinutes]
@@ -183,7 +176,6 @@ export default function DeviceDetail() {
           </Grid>
         )}
 
-        {/* DHT chart + table */}
         {dhtData.length > 0 && (
           <Grid size={{ xs: 12, md: 6 }}>
             <Card>
@@ -195,7 +187,6 @@ export default function DeviceDetail() {
               </CardContent>
             </Card>
 
-            {/* DHT table */}
             <TableContainer component={Paper} sx={{ mt: 2 }}>
               <Table size="small">
                 <TableHead>
@@ -230,7 +221,6 @@ export default function DeviceDetail() {
           </Grid>
         )}
 
-        {/* Sound chart + table */}
         {soundData.length > 0 && (
           <Grid size={{ xs: 12, md: 6 }}>
             <Card>
@@ -242,7 +232,6 @@ export default function DeviceDetail() {
               </CardContent>
             </Card>
 
-            {/* Sound table */}
             <TableContainer component={Paper} sx={{ mt: 2 }}>
               <Table size="small">
                 <TableHead>
@@ -278,7 +267,6 @@ export default function DeviceDetail() {
         )}
       </Grid>
 
-      {/* Window selector */}
       <Box sx={{ mt: 1, display: "flex", justifyContent: "flex-end" }}>
         <ToggleButtonGroup
           value={windowMinutes}

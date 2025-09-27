@@ -1,6 +1,6 @@
 export type DhtMessage = {
   device_id: string;
-  ts: string; // ISO
+  ts: string;
   ts_epoch?: number;
   temperature: number;
   humidity: number;
@@ -25,10 +25,8 @@ export type SoundMessage = {
   key_id?: string;
 };
 
-// as returned by /api/iot/query/:deviceId
 export type LedgerRow = { key: string; value: string };
 
-// normalized union for charting
 export type Telemetry =
   | ({ kind: "dht" } & DhtMessage)
   | ({ kind: "sound" } & SoundMessage);
