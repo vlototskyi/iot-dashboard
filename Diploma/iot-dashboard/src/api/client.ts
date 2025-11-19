@@ -14,11 +14,17 @@ export async function queryByDevice(deviceId: string): Promise<Telemetry[]> {
 }
 
 export async function queryByDevices(
-  deviceIds: string[]
+  deviceIds: string[],
+  token
 ): Promise<Telemetry[]> {
+  console.log("TOKEN => ", token);
   const calls = deviceIds.map((id) =>
     api
-      .get<LedgerRow[]>(`/api/iot/query/${encodeURIComponent(id)}`)
+      .get<LedgerRow[]>(`/api/iot/query/${encodeURIComponent(id)}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((r) => r.data)
       .catch(() => [])
   );

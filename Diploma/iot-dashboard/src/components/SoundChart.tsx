@@ -30,13 +30,13 @@ export default function SoundChart({ data }: { data: Row[] }) {
           type="monotone"
           dataKey="sound_percent_avg"
           stroke="#1976d2"
-          name="Average"
+          name="Середнє значення"
         />
         <Line
           type="monotone"
           dataKey="sound_percent_peak"
           stroke="#d32f2f"
-          name="Peak"
+          name="Найвище значення"
         />
       </AreaChart>
     </ResponsiveContainer>

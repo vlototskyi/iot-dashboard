@@ -24,6 +24,7 @@ import type { Telemetry } from "../api/types";
 import DhtChart from "../components/DhtChart";
 import SoundChart from "../components/SoundChart";
 import { lastWindow } from "../utils/timeWindow";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const POLL_MS = 10_000;
 
@@ -38,16 +39,19 @@ export default function DeviceDetail() {
   const [err, setErr] = useState<string | null>(null);
   const [windowMinutes, setWindowMinutes] = useState(60);
   const timerRef = useRef<number | null>(null);
+  const { getIdTokenClaims } = useAuth0();
 
   const navigate = useNavigate();
 
   const load = async () => {
     try {
       setErr(null);
-      const items = await queryByDevices(deviceIds);
+      const claims = await getIdTokenClaims();
+      const items = await queryByDevices(deviceIds, claims?.__raw);
       setData(items);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Load failed";
+      const msg =
+        e instanceof Error ? e.message : "Не вдалось завантажити дані";
       setErr(msg);
     }
   };
@@ -105,12 +109,12 @@ export default function DeviceDetail() {
     <Stack spacing={3}>
       <Box sx={{ mb: 2, display: "flex", justifyContent: "flex-start" }}>
         <Button variant="outlined" onClick={() => navigate("/")}>
-          ← Back
+          ← Назад
         </Button>
       </Box>
 
       <Typography variant="h5">
-        Device{deviceIds.length > 1 ? "s" : ""}: {deviceIds.join(", ")}
+        {deviceIds.length > 1 ? "Пристрої" : "Пристрій"}: {deviceIds.join(", ")}
       </Typography>
       {err && <Alert severity="error">{err}</Alert>}
 
@@ -122,7 +126,7 @@ export default function DeviceDetail() {
               <Card>
                 <CardContent>
                   <Typography variant="subtitle2" color="text.secondary">
-                    Last Temperature
+                    Останній показник температури
                   </Typography>
                   <Typography variant="h4">
                     {lastDht ? `${lastDht.temperature.toFixed(1)} °C` : "—"}
@@ -139,7 +143,7 @@ export default function DeviceDetail() {
               <Card>
                 <CardContent>
                   <Typography variant="subtitle2" color="text.secondary">
-                    Last Humidity
+                    Останній показник вологості
                   </Typography>
                   <Typography variant="h4">
                     {lastDht ? `${lastDht.humidity.toFixed(0)} %` : "—"}
@@ -147,7 +151,7 @@ export default function DeviceDetail() {
                   <Typography variant="body2" color="text.secondary">
                     {lastDht
                       ? new Date(lastDht.ts).toLocaleString()
-                      : "no data"}
+                      : "немає даних"}
                   </Typography>
                 </CardContent>
               </Card>
@@ -159,7 +163,7 @@ export default function DeviceDetail() {
             <Card>
               <CardContent>
                 <Typography variant="subtitle2" color="text.secondary">
-                  Last Sound Peak
+                  Останній найвищий показник шуму
                 </Typography>
                 <Typography variant="h4">
                   {lastSound
@@ -169,7 +173,7 @@ export default function DeviceDetail() {
                 <Typography variant="body2" color="text.secondary">
                   {lastSound
                     ? new Date(lastSound.ts).toLocaleString()
-                    : "no data"}
+                    : "немає даних"}
                 </Typography>
               </CardContent>
             </Card>
@@ -181,7 +185,7 @@ export default function DeviceDetail() {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Temperature / Humidity
+                  Температура / Вологість
                 </Typography>
                 <DhtChart data={dhtData as any[]} />
               </CardContent>
@@ -191,10 +195,10 @@ export default function DeviceDetail() {
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Time</TableCell>
-                    <TableCell>Device</TableCell>
-                    <TableCell align="right">Temperature (°C)</TableCell>
-                    <TableCell align="right">Humidity (%)</TableCell>
+                    <TableCell>Час</TableCell>
+                    <TableCell>Пристрій</TableCell>
+                    <TableCell align="right">Температура (°C)</TableCell>
+                    <TableCell align="right">Вологість (%)</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -226,7 +230,7 @@ export default function DeviceDetail() {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Sound Levels
+                  Рівень шуму
                 </Typography>
                 <SoundChart data={soundData as any[]} />
               </CardContent>
@@ -236,10 +240,10 @@ export default function DeviceDetail() {
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Time</TableCell>
-                    <TableCell>Device</TableCell>
-                    <TableCell align="right">Avg (%)</TableCell>
-                    <TableCell align="right">Peak (%)</TableCell>
+                    <TableCell>Час</TableCell>
+                    <TableCell>Пристрій</TableCell>
+                    <TableCell align="right">Середній (%)</TableCell>
+                    <TableCell align="right">Найвищий (%)</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -274,9 +278,10 @@ export default function DeviceDetail() {
           onChange={handleWindowChange}
           size="small"
         >
-          <ToggleButton value={15}>15m</ToggleButton>
-          <ToggleButton value={60}>1h</ToggleButton>
-          <ToggleButton value={1440}>24h</ToggleButton>
+          <ToggleButton value={15}>15хв</ToggleButton>
+          <ToggleButton value={60}>1г</ToggleButton>
+          <ToggleButton value={1440}>24г</ToggleButton>
+          <ToggleButton value={1080}>7д</ToggleButton>
         </ToggleButtonGroup>
       </Box>
     </Stack>
